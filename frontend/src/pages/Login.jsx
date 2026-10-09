@@ -7,20 +7,36 @@ function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token && role) {
+      navigate(role === 'admin' ? '/admin' : '/client', { replace: true });
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     try {
       const res = await api.post('/auth/login', { username, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
       localStorage.setItem('name', res.data.name);
       
-      if (res.data.role === 'admin') navigate('/admin');
-      else navigate('/client');
+      if (res.data.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/client', { replace: true });
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản/mật khẩu!');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +69,9 @@ function Login() {
               required 
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100 mt-4">Đăng nhập</button>
+          <button type="submit" className="btn btn-primary w-100 mt-4" disabled={loading}>
+            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          </button>
         </form>
       </div>
     </div>
