@@ -23,7 +23,8 @@ app.use('/api/client', clientRoutes);
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendDistPath));
 
-app.get('*', (req, res) => {
+// Xử lý Client-side routing cho SPA (tương thích cả Express 4 và Express 5)
+app.use((req, res, next) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ message: 'API route not found' });
   }
